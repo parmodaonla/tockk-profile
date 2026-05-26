@@ -1,0 +1,12 @@
+{
+  "name": "tockk-profile-api",
+  "version": "1.0.0",
+  "description": "Tockk Profile Backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
