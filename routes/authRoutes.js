@@ -1,0 +1,152 @@
+const express = require("express");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const otpGenerator = require("otp-generator");
+const User = require("../models/User");
+
+const router = express.Router();
+
+
+// SEND OTP
+router.post("/send-otp", async (req, res) => {
+
+  try {
+
+    const { email } = req.body;
+
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false
+    });
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({
+        name: "temp",
+        email,
+        phone: "temp",
+        password: "temp",
+        otp
+      });
+
+      await user.save();
+    } else {
+      user.otp = otp;
+      await user.save();
+    }
+
+    console.log("OTP:", otp);
+
+    res.json({
+      success: true,
+      message: "OTP Sent Successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+});
+
+
+// REGISTER
+router.post("/register", async (req, res) => {
+
+  try {
+
+    const { name, email, phone, password, otp } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "Send OTP First"
+      });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({
+        message: "Invalid OTP"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    user.name = name;
+    user.phone = phone;
+    user.password = hashedPassword;
+    user.otpVerified = true;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Account Created Successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+});
+
+
+// LOGIN
+router.post("/login", async (req, res) => {
+
+  try {
+
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User Not Found"
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({
+        message: "Invalid Password"
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      "tockkSecretKey",
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      success: true,
+      token,
+      user
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+});
+
+module.exports = router;
