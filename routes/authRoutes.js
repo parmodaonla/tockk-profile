@@ -23,6 +23,7 @@ router.post("/send-otp", async (req, res) => {
     let user = await User.findOne({ email });
 
     if (!user) {
+
       user = new User({
         name: "temp",
         email,
@@ -32,9 +33,12 @@ router.post("/send-otp", async (req, res) => {
       });
 
       await user.save();
+
     } else {
+
       user.otp = otp;
       await user.save();
+
     }
 
     console.log("OTP:", otp);
@@ -148,5 +152,50 @@ router.post("/login", async (req, res) => {
   }
 
 });
+
+
+// FORGOT PASSWORD
+router.post("/forgot-password", async (req, res) => {
+
+  try {
+
+    const { email, otp, newPassword } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({
+        message: "User Not Found"
+      });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({
+        message: "Invalid OTP"
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Password Updated Successfully"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+
+  }
+
+});
+
 
 module.exports = router;
