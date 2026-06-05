@@ -2,46 +2,52 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
 
-  name: {
-    type: String,
-    required: true
-  },
+name: {
+type: String,
+required: true
+},
 
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
+username: {
+type: String,
+required: true,
+unique: true
+},
 
-  phone: {
-    type: String,
-    required: true
-  },
+email: {
+type: String,
+required: true,
+unique: true
+},
 
-  password: {
-    type: String,
-    required: true
-  },
+phone: {
+type: String,
+required: true
+},
 
-  otp: {
-    type: String,
-    default: ""
-  },
+password: {
+type: String,
+required: true
+},
 
-  otpVerified: {
-    type: Boolean,
-    default: false
-  },
+otp: {
+type: String,
+default: ""
+},
 
-  profilePic: {
-    type: String,
-    default: ""
-  },
+otpVerified: {
+type: Boolean,
+default: false
+},
 
-  bio: {
-    type: String,
-    default: ""
-  }
+profilePic: {
+type: String,
+default: ""
+},
+
+bio: {
+type: String,
+default: ""
+}
 
 }, { timestamps: true });
 
