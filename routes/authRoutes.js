@@ -8,7 +8,6 @@ const router = express.Router();
 
 // SEND OTP
 router.post("/send-otp", async (req, res) => {
-
 try {
 
 const { email } = req.body;
@@ -26,20 +25,19 @@ if (!user) {
   user = new User({
     name: "temp",
     username: "temp" + Date.now(),
-    email,
-    phone: "temp",
-    password: "temp",
-    otp
+    email: email,
+    phone: "0000000000",
+    password: "temp123",
+    otp: otp
   });
-
-  await user.save();
 
 } else {
 
   user.otp = otp;
-  await user.save();
 
 }
+
+await user.save();
 
 console.log("OTP:", otp);
 
@@ -56,7 +54,6 @@ res.status(500).json({
 });
 
 }
-
 });
 
 // REGISTER
@@ -70,12 +67,14 @@ const user = await User.findOne({ email });
 
 if (!user) {
   return res.status(400).json({
+    success: false,
     message: "Send OTP First"
   });
 }
 
 if (user.otp !== otp) {
   return res.status(400).json({
+    success: false,
     message: "Invalid OTP"
   });
 }
@@ -96,7 +95,7 @@ await user.save();
 
 res.json({
   success: true,
-  username,
+  username: username,
   message: "Account Created Successfully"
 });
 
@@ -108,7 +107,6 @@ res.status(500).json({
 });
 
 }
-
 });
 
 // LOGIN
@@ -122,6 +120,7 @@ const user = await User.findOne({ email });
 
 if (!user) {
   return res.status(400).json({
+    success: false,
     message: "User Not Found"
   });
 }
@@ -130,6 +129,7 @@ const isMatch = await bcrypt.compare(password, user.password);
 
 if (!isMatch) {
   return res.status(400).json({
+    success: false,
     message: "Invalid Password"
   });
 }
@@ -154,7 +154,6 @@ res.status(500).json({
 });
 
 }
-
 });
 
 // FORGOT PASSWORD
@@ -168,12 +167,14 @@ const user = await User.findOne({ email });
 
 if (!user) {
   return res.status(400).json({
+    success: false,
     message: "User Not Found"
   });
 }
 
 if (user.otp !== otp) {
   return res.status(400).json({
+    success: false,
     message: "Invalid OTP"
   });
 }
@@ -197,7 +198,6 @@ res.status(500).json({
 });
 
 }
-
 });
 
 module.exports = router;
